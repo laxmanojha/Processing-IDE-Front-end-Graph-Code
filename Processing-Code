@@ -1,0 +1,55 @@
+ArrayList <PVector> points = new ArrayList <PVector> ();
+ 
+import processing.serial.*;
+Serial myPort;  // The serial port
+int lf = 10;    // Linefeed in ASCII
+String myString = null;
+float x,y,angle,r,n;
+float f = 5;
+ 
+void setup() {
+  // List all the available serial ports
+  printArray(Serial.list());
+  // Open the port you are using at the rate you want:
+  myPort = new Serial(this, Serial.list()[0], 115200);
+    
+  size(1920,1080);
+  points.add(new PVector(0,0,0));
+}
+ 
+void draw() {
+  while (myPort.available() > 0){
+    myString = myPort.readStringUntil(10);
+    if (myString != null) {
+      String[] q = splitTokens(myString, "p");
+      if (q.length>1){
+        angle=float(q[0]);  // Converts and prints float
+        r = float(q[1]);  // Converts and prints float
+        n = float(q[2]);
+        x = (f*sin(angle)*r + 300);
+        y = (f*cos(angle)*r + 300);
+      }
+    }
+        
+    background(0);
+    PVector p_last = points.get(points.size()-1);
+    
+    if (n != p_last.z){points.add(new PVector(x,y,n));}
+    
+    while (points.size() > 117) {
+      points.remove(0);
+    }
+    
+    for (int i=1; i<points.size(); i++) {
+      PVector p1 = points.get(i-1);
+      PVector p2 = points.get(i);
+      stroke(0,255,0); // line color: no fill, green stroke
+      strokeWeight(5);
+      line(p1.x,p1.y, p2.x,p2.y);
+    }
+    PVector p3 = points.get(points.size()-1);
+    stroke(255,0,0); // ellipse color: default white fill, red stroke
+    strokeWeight(20);
+    ellipse(p3.x,p3.y,15,15);
+  }
+}
